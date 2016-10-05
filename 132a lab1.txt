@@ -1,0 +1,55 @@
+CSE 132A LAB 1
+
+Consider the following database schema for a BOOKSTORE database:
+•	Books (bookid, title, author, year)
+•	Customers (customerid, name, email)
+•	Purchases (customerid, bookid, year)
+•	Reviews (customerid, bookid, rating)
+•	Pricing (bookid, format, price)
+
+E.G
+Books(105, 'JAVA PROGRAMMING', 'JOHN DOE', 2001)
+Customers(210, 'JOHN SMITH', 'SMITH@YAHOO.COM')
+Purchases(210, 105, 2002)
+Reviews(210, 105, 3)
+Pricing(105, 'AUDIO', 25)
+
+1.	Find books (show their titles) written by 'EDMUND MORGAN' since year 1990.
+
+SELECT title
+FROM Books
+WHERE author = "EDMUND MORGAN" AND
+      year > 1989;
+
+2.	Find books (show their titles, authors and prices) that are on 'CIVIL WAR' (i.e., the title field contains 'CIVIL WAR'), available in 'AUDIO' format.
+
+SELECT b.title, b.author, p.price
+FROM BOOKS b
+INNER JOIN PRICING p ON p.bookid = b.bookid 
+WHERE b.title like '%CIVIL WAR%' 
+AND p.format like '%AUDIO%' group by b.title
+
+3.	For each year, 'JOHN CHAMBERS' purchased at least one book, find the number of books purchased. That is, the output should be a set of tuples, each indicating a year and the number of books purchased by 'JOHN CHAMBERS' in that year.
+
+select purchases.year, count(*) as numBooks 
+from books, customers, purchases 
+where purchases.bookid = books.bookid and purchases.customerid = customers.customerid and customers.name = 'JOHN CHAMBERS' 
+group by year 
+having count(*) > 0 
+
+4.	Find customers (show their names and email addresses) who purchased more than one book in year 2003.
+
+SELECT name, email
+FROM Customers c
+INNER JOIN Purchases p ON c.customerId = p.customerId
+WHERE p.year = 2003
+GROUP BY name, email
+HAVING COUNT(p.customerId) > 1;
+
+5.	Find the ratings information (show titles, authors and average ratings) for books on 'CIVIL WAR' (i.e., title contains 'CIVIL WAR').
+
+SELECT b.title,b.author,AVG(r.rating)
+FROM BOOKS b
+INNER JOIN REVIEWS r ON r.bookid = b.bookid
+WHERE b.title LIKE '%CIVIL WAR%'
+GROUP BY b.title, b.author

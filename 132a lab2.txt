@@ -1,0 +1,71 @@
+LAB 2
+
+     Ships(name, yearLaunched, country, numGuns, gunSize, displacement)
+     Battles(ship, battleName, result)
+
+ ('New Jersey', 1943, 'USA', 9, 16, 46000)
+('Hood', 'North Atlantic', 'sunk')
+
+
+Which battleships launched before 1930 had 16-inch guns? List their names, their country, and the number of guns they carried.
+
+SELECT name,country,numGuns
+FROM Ships
+WHERE yearLaunched < 1930 and gunSize = 16;
+
+Which battleship(s) had the guns with the largest gun size?
+
+SELECT name
+FROM Ships
+WHERE gunSize NOT IN 
+   (SELECT s.gunSize
+    FROM Ships s,Ships f
+    WHERE s.gunSize < f.gunSize)
+
+Which battleships had the guns with the second largest gun size. More precisely, find the ships whose gun size was exceeded by only one gun size, no matter how many other ships had that larger gun size. List the names of the ships and their gun size.
+
+Select name, gunSize 
+from ships
+where gunSize=(
+  select max(gunSize) as SecondBiggest 
+  from ships 
+  where gunSize<(
+      select max(gunSize) as Biggest 
+      from ships)
+)
+
+List, for each country, the average number of guns carried by their battleships.
+
+select  country
+,       average.num
+from    (
+        select  country
+        ,       avg(numGuns) as num
+        from    Ships
+        group by
+                country
+        ) as average
+group by
+        country
+
+List all the pairs of countries that fought each other in battles. List each pair only once, and list them with the country that comes first in alphabetical order first.
+
+SELECT DISTINCT s1.country, s2.country
+FROM battles b1
+JOIN ships s1
+ON s1.name = b1.ship
+JOIN battles b2
+ON b2.battlename = b1.battlename
+JOIN ships s2
+ON s2.name = b2.ship
+WHERE s1.country > s2.country
+ORDER BY s1.country, s2.country
+
+For the battle of Surigao Strait, for each country engaged in that battle (had one or more battleships participating), give the number of its battleships that were sunk. Note: this question is very tricky. In particular, you need to deal with the (historical) case that a country engaged in the battle but did not have any ships sunk.
+
+SELECT country,SUM(CASE WHEN result = 'sunk' THEN 1 ELSE 0 END) AS TotalShipSunk 
+FROM ships 
+INNER JOIN battles 
+      ON ships.name=battles.ship 
+WHERE battleName='Surigao Strait'
+GROUP BY country
